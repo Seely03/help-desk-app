@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "target": "es2020",
+    "module": "NodeNext",            // changed from commonjs
+    "moduleResolution": "NodeNext",  // changed from node
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "verbatimModuleSyntax": false    // <--- Change this to false to stop the 'type-only' error
+  }
+}
