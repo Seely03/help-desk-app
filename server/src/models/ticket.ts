@@ -1,58 +1,52 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Schema, Document } from 'mongoose';
+import { CONSTANTS } from '../constants/primitives.js';
 
-// 1. Update the Interface
 export interface ITicket extends Document {
   title: string;
-  description: string;
-  status: 'Open' | 'In Progress' | 'In Review' | 'Closed'; // Added 'In Review'
-  priority: 'Low' | 'Medium' | 'High';
-  sizing: 1 | 2 | 3 | 5 | 8 | 13 | 21; // Added Fibonacci types
-  userEmail: string;
-  createdAt: Date;
+  description?: string;
+  priority: string;
+  status: string;
+  assignedTo?: mongoose.Types.ObjectId; // Optional: Ticket might be unassigned
+  project: mongoose.Types.ObjectId;     // Required: Must belong to a project
 }
 
-// 2. Update the Schema
 const TicketSchema: Schema = new Schema({
   title: { 
     type: String, 
-    required: [true, 'Please add a title'], 
-    trim: true,
-    maxlength: [100, 'Title cannot be more than 100 characters'] 
+    required: true,
+    maxlength: CONSTANTS.TICKET.TITLE_MAX,
+    match: CONSTANTS.REGEX.NO_HTML,
+    trim: true
   },
   description: { 
-    type: String, 
-    required: [true, 'Please add a description'] 
+    type: String,
+    maxlength: CONSTANTS.TICKET.DESC_MAX,
+    match: CONSTANTS.REGEX.NO_HTML,
+    trim: true
   },
-  status: { 
-    type: String, 
-    // The enum strictly limits values to this list
-    enum: ['Open', 'In Progress', 'In Review', 'Closed'], 
-    default: 'Open' 
-  },
+  
+  // Enums for standardizing workflow
   priority: { 
     type: String, 
-    enum: ['Low', 'Medium', 'High'], 
-    default: 'Low' 
+    enum: CONSTANTS.ENUMS.PRIORITY, 
+    default: 'Medium' 
   },
-  // New Sizing Field
-  sizing: {
-    type: Number,
-    // Validate that the number is a valid Fibonacci estimate
-    enum: [1, 2, 3, 5, 8, 13, 21],
-    default: 1
-  },
-  userEmail: {
+  status: {
     type: String,
-    required: true,
-    match: [
-      /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
-      'Please add a valid email'
-    ]
+    enum: CONSTANTS.ENUMS.STATUS,
+    default: 'Open'
   },
-  createdAt: { 
-    type: Date, 
-    default: Date.now 
+
+  // Relationships
+  assignedTo: { type: Schema.Types.ObjectId, ref: 'User' },
+  
+  // The 'Strict' relationship (A ticket must have a project)
+  project: { 
+    type: Schema.Types.ObjectId, 
+    ref: 'Project', 
+    required: true 
   }
-});
+
+}, { timestamps: true });
 
 export default mongoose.model<ITicket>('Ticket', TicketSchema);
