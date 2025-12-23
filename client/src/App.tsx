@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import TicketForm from './components/TicketForm';
 import TicketList from './components/TicketList';
-import Login from './components/Login'; // <--- Import Login
+import LoginForm from './components/LoginForm'; // <--- Import Login
 import type { Ticket } from './types';
 import { AuthProvider, useAuth } from './context/AuthContext'; // <--- Import Context
 
@@ -31,7 +31,7 @@ function Dashboard() {
 
   // If not logged in, show Login Screen
   if (!user) {
-    return <Login />;
+    return <LoginForm />;
   }
 
   // If logged in, show Dashboard
