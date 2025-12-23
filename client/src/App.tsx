@@ -1,31 +1,63 @@
-// client/src/App.tsx
-import { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react';
+import TicketForm from './components/TicketForm';
+import TicketList from './components/TicketList';
+import Login from './components/Login'; // <--- Import Login
+import type { Ticket } from './types';
+import { AuthProvider, useAuth } from './context/AuthContext'; // <--- Import Context
 
-// Define the shape of our API response (Type Safety!)
-interface HealthResponse {
-  status: string;
-  message: string;
-  timestamp: string;
-}
-
-function App() {
-  const [status, setStatus] = useState<string>('Loading...')
+// Create a child component to handle the Logic (since App is the Provider)
+function Dashboard() {
+  const { user, logout } = useAuth(); // <--- Access User
+  const [tickets, setTickets] = useState<Ticket[]>([]);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/health')
-      .then(res => res.json())
-      .then((data: HealthResponse) => setStatus(data.message))
-      .catch(err => {
-        console.error(err); // <--- Now we are using it!
-        setStatus('API Error: Is server running?');
-    })})
+    // Only fetch if logged in
+    if (user) fetchTickets();
+  }, [user]);
 
+  const fetchTickets = async () => {
+    try {
+      const res = await fetch('http://localhost:5000/api/tickets');
+      const data = await res.json();
+      setTickets(data);
+    } catch (error) {
+      console.error('Error fetching tickets:', error);
+    }
+  };
+
+  const handleTicketCreated = (newTicket: Ticket) => {
+    setTickets([newTicket, ...tickets]);
+  };
+
+  // If not logged in, show Login Screen
+  if (!user) {
+    return <Login />;
+  }
+
+  // If logged in, show Dashboard
   return (
-    <div style={{ padding: '20px' }}>
-      <h1>Help Desk Portal (TS)</h1>
-      <p>Backend Status: <strong>{status}</strong></p>
+    <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px', fontFamily: 'Arial, sans-serif' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h1>IT Help Desk</h1>
+        <div>
+          <span>Welcome, {user.name} </span>
+          <button onClick={logout} style={{ marginLeft: '10px', padding: '5px 10px' }}>Logout</button>
+        </div>
+      </div>
+      
+      <TicketForm onTicketCreated={handleTicketCreated} />
+      <TicketList tickets={tickets} />
     </div>
-  )
+  );
 }
 
-export default App
+// Wrap the whole app in the Provider
+function App() {
+  return (
+    <AuthProvider>
+      <Dashboard />
+    </AuthProvider>
+  );
+}
+
+export default App;
