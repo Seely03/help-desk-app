@@ -62,3 +62,18 @@ export const createProject = async (req: Request, res: Response) => {
     return res.status(500).json({ message: 'Internal Server Error' });
   }
 };
+
+export const getProjects = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user.id;
+
+    // Find projects where the 'members' array contains this user's ID
+    const projects = await Project.find({ members: userId })
+      .sort({ createdAt: -1 }); // Newest first
+
+    res.json(projects);
+  } catch (error) {
+    console.error('Get Projects Error:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+};

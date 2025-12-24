@@ -5,7 +5,7 @@ import connectDB from './db.js';
 // Import Routes
 import ticketRoutes from './routes/ticketRoutes.js';
 import authRoutes from './routes/authRoutes.js';
-import projectRoutes from './routes/projectRoutes.js'; // <--- Import the new Project routes
+import { projectRouter } from './routes/projectRoutes.js';
 
 // Connect to Database
 connectDB();
@@ -18,7 +18,7 @@ app.use(express.json());
 
 // --- Mount the Routes ---
 app.use('/api/users', authRoutes);       // Handles Login/Register
-app.use('/api/projects', projectRoutes); // <--- New: Handles Creating/Fetching Projects
+app.use('/api/projects', projectRouter); // <--- New: Handles Creating/Fetching Projects
 app.use('/api/tickets', ticketRoutes);   // Handles Ticket operations
 
 // Health Check

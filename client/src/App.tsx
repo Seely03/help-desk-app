@@ -4,22 +4,24 @@ import TicketList from './components/TicketList';
 import LoginForm from './components/LoginForm'; // <--- Import Login
 import type { Ticket } from './types';
 import { AuthProvider, useAuth } from './context/AuthContext'; // <--- Import Context
+import RegisterForm from './components/RegisterForm';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import api from './services/api';
 
 // Create a child component to handle the Logic (since App is the Provider)
 function Dashboard() {
-  const { user, logout } = useAuth(); // <--- Access User
+  const { user, logout } = useAuth();
   const [tickets, setTickets] = useState<Ticket[]>([]);
 
   useEffect(() => {
-    // Only fetch if logged in
     if (user) fetchTickets();
   }, [user]);
 
   const fetchTickets = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/tickets');
-      const data = await res.json();
-      setTickets(data);
+      // USE api (axios) instead of fetch so the Token is sent!
+      const res = await api.get('/tickets'); 
+      setTickets(res.data);
     } catch (error) {
       console.error('Error fetching tickets:', error);
     }
@@ -31,7 +33,7 @@ function Dashboard() {
 
   // If not logged in, show Login Screen
   if (!user) {
-    return <LoginForm />;
+    return <Navigate to="/login" />;
   }
 
   // If logged in, show Dashboard
@@ -55,7 +57,16 @@ function Dashboard() {
 function App() {
   return (
     <AuthProvider>
-      <Dashboard />
+      <Router>
+        <div className="min-h-screen bg-gray-50">
+          <Routes>
+            <Route path="/" element={<Navigate to="/login" />} />
+            <Route path="/login" element={<LoginForm />} />
+            <Route path="/register" element={<RegisterForm />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+          </Routes>
+        </div>
+      </Router>
     </AuthProvider>
   );
 }

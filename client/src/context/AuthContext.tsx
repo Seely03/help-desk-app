@@ -1,41 +1,44 @@
 import { createContext, useState, useEffect, type ReactNode, useContext } from 'react';
 
-interface User {
-  _id: string;
-  name: string;
-  email: string;
-  role: string;
-  token: string;
-}
-
 interface AuthContextType {
-  user: User | null;
-  login: (token: string, userData: User) => void;
+  user: any;
+  login: (userData: any, token: string) => void;
   logout: () => void;
 }
 
-const AuthContext = createContext<AuthContextType | null>(null);
+export const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<any>(null);
 
-  // Check if user is already logged in (on page refresh)
   useEffect(() => {
+    // FIX: Safe JSON parsing
     const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
+    const token = localStorage.getItem('token');
+
+    if (storedUser && storedUser !== "undefined" && token) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (error) {
+        // If parsing fails, clear the corrupted data
+        console.error("Failed to parse user data", error);
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+      }
     }
   }, []);
 
-  const login = (token: string, userData: User) => {
-    const userWithToken = { ...userData, token };
-    setUser(userWithToken);
-    localStorage.setItem('user', JSON.stringify(userWithToken)); // Persist login
+  const login = (userData: any, token: string) => {
+    setUser(userData);
+    localStorage.setItem('user', JSON.stringify(userData));
+    localStorage.setItem('token', token);
   };
 
   const logout = () => {
     setUser(null);
     localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    window.location.href = '/login';
   };
 
   return (
@@ -45,9 +48,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-// Custom hook to use auth easily
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within an AuthProvider');
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
   return context;
 };

@@ -4,7 +4,7 @@ import { CONSTANTS } from '../constants/primitives.js';
 export interface IUser extends Document {
   username: string;
   email: string;
-  password?: string;
+  password: string;
   isAdmin: boolean;
   jobTitle?: string; // Now restricted to specific strings
   team?: string;
