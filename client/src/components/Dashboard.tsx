@@ -70,10 +70,10 @@ export default function Dashboard() {
         name: newProjectName,
         description: newProjectDesc
       });
-      
+
       // Add the new project to the list immediately (Optimistic UI)
       setProjects([res.data.project, ...projects]);
-      
+
       // Reset form
       setNewProjectName('');
       setNewProjectDesc('');
@@ -94,7 +94,7 @@ export default function Dashboard() {
           <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
           <p className="text-gray-600">Welcome back, {user?.username}</p>
         </div>
-        <button 
+        <button
           onClick={handleLogout}
           className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded shadow transition"
         >
@@ -103,26 +103,28 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        
+
         {/* Projects Section */}
         <div className="bg-white p-6 rounded-lg shadow-md">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold text-gray-800">Your Projects</h2>
-            <button 
-              onClick={() => setShowCreateForm(!showCreateForm)}
+
+            <button
+              onClick={() => navigate('/create-project')} // <--- Navigate to new page
               className="text-blue-600 hover:text-blue-800 text-sm font-semibold"
             >
-              {showCreateForm ? 'Cancel' : '+ New Project'}
+              + New Project
             </button>
           </div>
+
 
           {/* Create Project Form (Visible only when toggled) */}
           {showCreateForm && (
             <form onSubmit={handleCreateProject} className="mb-6 p-4 bg-blue-50 rounded border border-blue-100">
               <div className="mb-2">
-                <input 
-                  type="text" 
-                  placeholder="Project Name" 
+                <input
+                  type="text"
+                  placeholder="Project Name"
                   value={newProjectName}
                   onChange={(e) => setNewProjectName(e.target.value)}
                   className="w-full p-2 border rounded text-sm"
@@ -130,9 +132,9 @@ export default function Dashboard() {
                 />
               </div>
               <div className="mb-2">
-                <input 
-                  type="text" 
-                  placeholder="Description (Optional)" 
+                <input
+                  type="text"
+                  placeholder="Description (Optional)"
                   value={newProjectDesc}
                   onChange={(e) => setNewProjectDesc(e.target.value)}
                   className="w-full p-2 border rounded text-sm"
@@ -143,15 +145,19 @@ export default function Dashboard() {
               </button>
             </form>
           )}
-          
+
           {/* Project List */}
           {projects.length === 0 ? (
             <p className="text-gray-500 italic">You haven't joined any projects yet.</p>
           ) : (
             <ul className="space-y-3">
               {projects.map((proj) => (
-                <li key={proj._id} className="border-b pb-2 last:border-0">
-                  <h3 className="font-semibold">{proj.name}</h3>
+                <li
+                  key={proj._id}
+                  className="border-b pb-2 last:border-0 cursor-pointer hover:bg-gray-50 p-2 transition"
+                  onClick={() => navigate(`/projects/${proj._id}`)} // <--- Add navigation
+                >
+                  <h3 className="font-semibold text-blue-600">{proj.name}</h3>
                   <p className="text-sm text-gray-600 truncate">{proj.description}</p>
                 </li>
               ))}
@@ -162,7 +168,7 @@ export default function Dashboard() {
         {/* Tickets Section */}
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-bold text-gray-800 mb-4">Assigned Tickets (Open)</h2>
-          
+
           {tickets.length === 0 ? (
             <p className="text-gray-500 italic">No open tickets assigned to you.</p>
           ) : (
@@ -176,9 +182,9 @@ export default function Dashboard() {
                     </span>
                   </div>
                   <span className={`text-xs px-2 py-1 rounded font-bold 
-                    ${ticket.priority === 'High' ? 'bg-red-100 text-red-700' : 
-                      ticket.priority === 'Medium' ? 'bg-yellow-100 text-yellow-700' : 
-                      'bg-green-100 text-green-700'}`}>
+                    ${ticket.priority === 'High' ? 'bg-red-100 text-red-700' :
+                      ticket.priority === 'Medium' ? 'bg-yellow-100 text-yellow-700' :
+                        'bg-green-100 text-green-700'}`}>
                     {ticket.priority}
                   </span>
                 </li>
