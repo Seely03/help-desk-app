@@ -77,3 +77,19 @@ export const getProjects = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Server Error' });
   }
 };
+
+// GET /api/projects/:id
+export const getProjectById = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const project = await Project.findById(id).populate('members', 'username email');
+
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+
+    res.json(project);
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
