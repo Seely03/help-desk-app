@@ -93,3 +93,36 @@ export const getProjectById = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Server Error' });
   }
 };
+
+export const addMember = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params; // Project ID
+    const { userId } = req.body; // User to add
+
+    // 1. Find Project
+    const project = await Project.findById(id);
+    if (!project) return res.status(404).json({ message: 'Project not found' });
+
+    // 2. Check if already a member
+    if (project.members.includes(userId)) {
+      return res.status(400).json({ message: 'User is already a member' });
+    }
+
+    // 3. Add to Project
+    project.members.push(userId);
+    await project.save();
+
+    // 4. Add Project to User (Two-way sync)
+    await User.findByIdAndUpdate(userId, {
+      $addToSet: { projects: project._id }
+    });
+
+    // Return the updated project with populated members so UI updates instantly
+    const updatedProject = await Project.findById(id).populate('members', 'username email jobTitle');
+    
+    res.json(updatedProject);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+};

@@ -112,3 +112,29 @@ export const getTickets = async (req: Request, res: Response) => {
     return res.status(500).json({ message: 'Internal Server Error' });
   }
 };
+
+// PUT /api/tickets/:id
+export const updateTicket = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body; // e.g., { status: 'Closed', assignedTo: '...' }
+
+    // 1. Find and Update
+    // { new: true } returns the updated document, not the old one
+    const ticket = await Ticket.findByIdAndUpdate(id, updates, { new: true })
+      .populate('assignedTo', 'username')
+      .populate('project', 'name');
+
+    if (!ticket) {
+      return res.status(404).json({ message: 'Ticket not found' });
+    }
+
+    // 2. (Optional) If assigning to a user, make sure to sync with User model
+    // For simplicity, we'll rely on the Ticket.assignedTo field being the source of truth for now.
+
+    res.json(ticket);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
