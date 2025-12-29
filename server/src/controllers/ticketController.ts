@@ -3,11 +3,11 @@ import { z } from 'zod';
 import Ticket from '../models/ticket.js';
 import Project from '../models/project.js';
 import User from '../models/user.js';
-import { 
-  TicketTitle, 
-  TicketPriority, 
-  TicketStatus, 
-  CONSTANTS 
+import {
+  TicketTitle,
+  TicketPriority,
+  TicketStatus,
+  CONSTANTS
 } from '../constants/primitives.js';
 
 // 1. Zod Schema for Creating a Ticket
@@ -30,7 +30,7 @@ export const createTicket = async (req: Request, res: Response) => {
     const userId = (req as any).user?.id; // The user creating the ticket
 
     // --- B. LOGIC CHECKS ---
-    
+
     // 1. Does the Project exist?
     const project = await Project.findById(validatedData.projectId);
     if (!project) {
@@ -41,7 +41,7 @@ export const createTicket = async (req: Request, res: Response) => {
     // if (!project.members.includes(userId)) { ... }
 
     // --- C. DATABASE ACTION ---
-    
+
     // 2. Create the Ticket
     const newTicket = new Ticket({
       title: validatedData.title,
@@ -49,7 +49,7 @@ export const createTicket = async (req: Request, res: Response) => {
       priority: validatedData.priority || 'Medium',
       status: validatedData.status || 'Open',
       project: validatedData.projectId,
-      assignedTo: validatedData.assignedTo || null 
+      assignedTo: validatedData.assignedTo || null
     });
 
     const savedTicket = await newTicket.save();
@@ -62,9 +62,9 @@ export const createTicket = async (req: Request, res: Response) => {
       });
     }
 
-    return res.status(201).json({ 
-      message: 'Ticket created successfully', 
-      ticket: savedTicket 
+    return res.status(201).json({
+      message: 'Ticket created successfully',
+      ticket: savedTicket
     });
 
   } catch (error) {
@@ -119,18 +119,45 @@ export const updateTicket = async (req: Request, res: Response) => {
     const { id } = req.params;
     const updates = req.body; // e.g., { status: 'Closed', assignedTo: '...' }
 
+    if (updates.assignedTo === "") {
+      updates.assignedTo = null;
+    }
+
     // 1. Find and Update
     // { new: true } returns the updated document, not the old one
     const ticket = await Ticket.findByIdAndUpdate(id, updates, { new: true })
-      .populate('assignedTo', 'username')
+      .populate('assignedTo', 'username email')
       .populate('project', 'name');
 
     if (!ticket) {
       return res.status(404).json({ message: 'Ticket not found' });
     }
 
-    // 2. (Optional) If assigning to a user, make sure to sync with User model
-    // For simplicity, we'll rely on the Ticket.assignedTo field being the source of truth for now.
+    res.json(ticket);
+  } catch (error) {
+    console.error("Update Ticket Error:", error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
+
+// GET /api/tickets/:id
+// GET /api/tickets/:id
+export const getTicketById = async (req: Request, res: Response) => {
+  try {
+    const ticket = await Ticket.findById(req.params.id)
+      .populate('assignedTo', 'username email') // Populate the assignee
+      .populate({
+        path: 'project',
+        select: 'name members', // Get project name and members
+        populate: {
+          path: 'members', // nested populate: turn member IDs into User objects
+          select: 'username email'
+        }
+      });
+
+    if (!ticket) {
+      return res.status(404).json({ message: 'Ticket not found' });
+    }
 
     res.json(ticket);
   } catch (error) {

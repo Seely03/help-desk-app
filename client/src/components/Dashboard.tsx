@@ -92,11 +92,21 @@ export default function Dashboard() {
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
-          <p className="text-gray-600">Welcome back, {user?.username}</p>
+          
+          {/* Admin Badge/Link */}
+          {user?.isAdmin && (
+            <button 
+              onClick={() => navigate('/admin/users')}
+              className="mt-2 text-xs bg-red-100 text-red-800 px-2 py-1 rounded font-bold hover:bg-red-200 transition"
+            >
+              🔧 Manage Users (Admin)
+            </button>
+          )}
         </div>
-        <button
-          onClick={handleLogout}
-          className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded shadow transition"
+        
+        <button 
+          onClick={handleLogout} 
+          className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition"
         >
           Logout
         </button>
@@ -194,6 +204,6 @@ export default function Dashboard() {
         </div>
 
       </div>
-    </div>
+    </div >
   );
 }

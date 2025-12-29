@@ -10,6 +10,7 @@ export interface IUser extends Document {
   team?: string;
   projects: mongoose.Types.ObjectId[];
   assignedTickets: mongoose.Types.ObjectId[];
+  isActive: boolean;
 }
 
 const UserSchema: Schema = new Schema({
@@ -45,9 +46,15 @@ const UserSchema: Schema = new Schema({
     maxlength: CONSTANTS.JOB.TEAM_MAX,
     trim: true
   },
+  
 
   projects: [{ type: Schema.Types.ObjectId, ref: 'Project' }],
-  assignedTickets: [{ type: Schema.Types.ObjectId, ref: 'Ticket' }]
+  assignedTickets: [{ type: Schema.Types.ObjectId, ref: 'Ticket' }],
+  
+  isActive: { 
+    type: Boolean, 
+    default: true // Users are active by default
+  }
 
 }, { timestamps: true });
 

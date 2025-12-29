@@ -6,6 +6,8 @@ import RegisterForm from './components/RegisterForm';
 import Dashboard from './components/Dashboard'; 
 import ProjectDetails from './components/ProjectDetails';
 import CreateProject from './components/CreateProject';
+import AdminUserManagement from './components/AdminUserManagement';
+import TicketDetails from './components/TicketDetails';
 
 // DELETE the inline 'function Dashboard() { ... }' completely!
 
@@ -27,6 +29,8 @@ function App() {
             {/* Project Routes */}
             <Route path="/create-project" element={<CreateProject />} />
             <Route path="/projects/:id" element={<ProjectDetails />} />
+            <Route path="/admin/users" element={<AdminUserManagement />} />
+            <Route path="/tickets/:id" element={<TicketDetails />} />
           </Routes>
         </div>
       </Router>
