@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAllUsers, updateUser, createNewUser, deleteUser } from '../services/authService';
+import Layout from './Layout';
 
 export default function AdminUserManagement() {
   const navigate = useNavigate();
+  const [user, setUser] = useState<any>(null);
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -21,6 +23,10 @@ export default function AdminUserManagement() {
   });
 
   useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
     fetchUsers();
   }, []);
 
@@ -104,6 +110,7 @@ export default function AdminUserManagement() {
   if (loading) return <div className="p-8">Loading users...</div>;
 
   return (
+    <Layout user={user}>
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">User Management</h1>
@@ -262,5 +269,6 @@ export default function AdminUserManagement() {
         </div>
       )}
     </div>
+    </Layout>
   );
 }

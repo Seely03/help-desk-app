@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { logoutUser } from '../services/authService';
+import Layout from './Layout';
 
 interface Project {
   _id: string;
@@ -87,6 +88,7 @@ export default function Dashboard() {
   if (loading) return <div className="p-8">Loading dashboard...</div>;
 
   return (
+    <Layout user={user}>
     <div className="min-h-screen bg-gray-50 p-8">
       {/* Header */}
       <div className="flex justify-between items-center mb-8">
@@ -205,5 +207,6 @@ export default function Dashboard() {
 
       </div>
     </div >
+    </Layout>
   );
 }

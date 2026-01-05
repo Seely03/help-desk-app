@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import Layout from './Layout';
 import AddMemberForm from './AddMemberForm';
 import TicketItem from './TicketItem';
 
@@ -8,6 +9,7 @@ export default function ProjectDetails() {
     const { id } = useParams(); // Get the ID from the URL
     const navigate = useNavigate();
 
+    const [user, setUser] = useState<any>(null);
     const [project, setProject] = useState<any>(null);
     const [tickets, setTickets] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -23,6 +25,11 @@ export default function ProjectDetails() {
     };
 
     useEffect(() => {
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+            setUser(JSON.parse(storedUser));
+        }
+
         const fetchProjectData = async () => {
             try {
                 // 1. Fetch Project Details
@@ -67,6 +74,7 @@ export default function ProjectDetails() {
     if (!project) return <div className="p-8">Project not found</div>;
 
     return (
+        <Layout user={user}>
         <div className="min-h-screen bg-gray-50 p-8">
             {/* Back Button */}
             <button onClick={() => navigate('/dashboard')} className="text-blue-600 mb-4 hover:underline">
@@ -159,6 +167,7 @@ export default function ProjectDetails() {
                     )}
                 </div>
             </div>
-        </div >
+        </div>
+        </Layout>
     );
 }

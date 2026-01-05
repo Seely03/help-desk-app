@@ -9,6 +9,7 @@ import {
   TicketStatus,
   CONSTANTS
 } from '../constants/primitives.js';
+import Comment from '../models/comment.js';
 
 // 1. Zod Schema for Creating a Ticket
 const CreateTicketSchema = z.object({
@@ -114,28 +115,61 @@ export const getTickets = async (req: Request, res: Response) => {
 };
 
 // PUT /api/tickets/:id
+// PUT /api/tickets/:id
 export const updateTicket = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const updates = req.body; // e.g., { status: 'Closed', assignedTo: '...' }
+    const updates = req.body;
+    const userId = (req as any).user._id; // The person making the change
 
-    if (updates.assignedTo === "") {
-      updates.assignedTo = null;
+    // 1. Get the OLD ticket (before update) so we can compare
+    const oldTicket = await Ticket.findById(id);
+    if (!oldTicket) return res.status(404).json({ message: 'Ticket not found' });
+
+    // 2. Perform the Update
+    const updatedTicket = await Ticket.findByIdAndUpdate(id, updates, { new: true })
+      .populate('assignedTo', 'username')
+      .populate('project', 'name members');
+
+    // 3. DETECT CHANGES & CREATE AUDIT LOGS
+    
+    // Check Status Change
+    if (updates.status && updates.status !== oldTicket.status) {
+      await Comment.create({
+        content: ` changed status from "${oldTicket.status}" to "${updates.status}"`,
+        ticket: id,
+        author: userId,
+        isSystem: true
+      });
     }
 
-    // 1. Find and Update
-    // { new: true } returns the updated document, not the old one
-    const ticket = await Ticket.findByIdAndUpdate(id, updates, { new: true })
-      .populate('assignedTo', 'username email')
-      .populate('project', 'name');
-
-    if (!ticket) {
-      return res.status(404).json({ message: 'Ticket not found' });
+    // Check Priority Change
+    if (updates.priority && updates.priority !== oldTicket.priority) {
+      await Comment.create({
+        content: `changed priority to "${updates.priority}"`,
+        ticket: id,
+        author: userId,
+        isSystem: true
+      });
     }
 
-    res.json(ticket);
+    // Check Assignment Change
+    // Note: We compare strings because ObjectIds are objects
+    if (updates.assignedTo && updates.assignedTo.toString() !== oldTicket.assignedTo?.toString()) {
+      // If we assigned it to someone, we might want to look up their name for the log
+      // But for simplicity, we'll just log that it was reassigned. 
+      // A more advanced version would look up the new assignee's name.
+      await Comment.create({
+        content: `updated the assignee`,
+        ticket: id,
+        author: userId,
+        isSystem: true
+      });
+    }
+
+    res.json(updatedTicket);
   } catch (error) {
-    console.error("Update Ticket Error:", error);
+    console.error(error);
     res.status(500).json({ message: 'Server Error' });
   }
 };

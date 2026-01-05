@@ -1,18 +1,32 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import Layout from './Layout';
+import StatusBadge from './StatusBadge';
 
 export default function TicketDetails() {
     const { id } = useParams();
     const navigate = useNavigate();
 
+    const [user, setUser] = useState<any>(null);
     const [ticket, setTicket] = useState<any>(null);
     const [comments, setComments] = useState<any[]>([]);
     const [newComment, setNewComment] = useState('');
     const [loading, setLoading] = useState(true);
 
-    // Load Data
+
+    const refreshComments = async () => {
+        const res = await api.get(`/tickets/${id}/comments`);
+        setComments(res.data);
+      };
+      
+    // Load User and Data
     useEffect(() => {
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+            setUser(JSON.parse(storedUser));
+        }
+
         const fetchData = async () => {
             try {
                 const ticketRes = await api.get(`/tickets/${id}`);
@@ -62,11 +76,12 @@ export default function TicketDetails() {
         }
 
         // 2. Update UI Immediately (with the Object)
-        setTicket((prev: any) => ({ ...prev, ...stateUpdates }));
+        setTicket({ ...ticket, ...updates });
 
         try {
             // 3. Send API Request (with the String ID)
             await api.put(`/tickets/${id}`, updates);
+            refreshComments();
         } catch (err) {
             console.error(err);
             alert('Failed to update ticket');
@@ -78,6 +93,7 @@ export default function TicketDetails() {
     if (!ticket) return <div className="p-8">Ticket not found</div>;
 
     return (
+        <Layout user={user}>
         <div className="min-h-screen bg-gray-50 p-8">
             {/* Back Link */}
             <button
@@ -92,7 +108,10 @@ export default function TicketDetails() {
                 {/* LEFT COLUMN: Content & Discussion */}
                 <div className="flex-1">
                     <div className="bg-white p-6 rounded shadow mb-6">
-                        <h1 className="text-3xl font-bold text-gray-900 mb-2">{ticket.title}</h1>
+                        <div className="flex items-center gap-3 mb-2">
+                            <h1 className="text-3xl font-bold text-gray-900">{ticket.title}</h1>
+                            <StatusBadge status={ticket.status} />
+                        </div>
                         <p className="text-gray-500 mb-4">
                             Created on {new Date(ticket.createdAt).toLocaleDateString()}
                         </p>
@@ -109,17 +128,35 @@ export default function TicketDetails() {
                             {comments.length === 0 && <p className="text-gray-400 italic">No comments yet.</p>}
 
                             {comments.map((comment) => (
-                                <div key={comment._id} className="flex gap-4">
-                                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
-                                        {comment.author?.username?.[0]?.toUpperCase()}
-                                    </div>
-                                    <div className="flex-1">
-                                        <div className="flex items-baseline gap-2 mb-1">
-                                            <span className="font-bold text-gray-900">{comment.author?.username}</span>
-                                            <span className="text-xs text-gray-500">{new Date(comment.createdAt).toLocaleString()}</span>
+                                <div key={comment._id} className="mb-4">
+
+                                    {/* RENDER SYSTEM LOG (Centered, Gray) */}
+                                    {comment.isSystem ? (
+                                        <div className="flex items-center justify-center my-4">
+                                            <div className="bg-gray-100 px-3 py-1 rounded-full text-xs text-gray-500 flex items-center gap-2 border">
+                                                <span className="font-bold">{comment.author?.username}</span>
+                                                <span>{comment.content}</span>
+                                                <span className="text-gray-400">• {new Date(comment.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                            </div>
                                         </div>
-                                        <p className="text-gray-800 leading-relaxed">{comment.content}</p>
-                                    </div>
+                                    ) : (
+
+                                        /* RENDER USER MESSAGE (Normal Bubble) */
+                                        <div className="flex gap-4">
+                                            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold shrink-0">
+                                                {comment.author?.username?.[0]?.toUpperCase()}
+                                            </div>
+                                            <div className="flex-1">
+                                                <div className="flex items-baseline gap-2 mb-1">
+                                                    <span className="font-bold text-gray-900">{comment.author?.username}</span>
+                                                    <span className="text-xs text-gray-500">{new Date(comment.createdAt).toLocaleString()}</span>
+                                                </div>
+                                                <div className="bg-white p-3 border rounded-lg shadow-sm text-gray-800">
+                                                    {comment.content}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                         </div>
@@ -205,5 +242,6 @@ export default function TicketDetails() {
 
             </div>
         </div>
+        </Layout>
     );
 }

@@ -8,6 +8,7 @@ import ProjectDetails from './components/ProjectDetails';
 import CreateProject from './components/CreateProject';
 import AdminUserManagement from './components/AdminUserManagement';
 import TicketDetails from './components/TicketDetails';
+import './index.css';
 
 // DELETE the inline 'function Dashboard() { ... }' completely!
 

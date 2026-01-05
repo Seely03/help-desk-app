@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import api from '../services/api';
 import { Link } from 'react-router-dom';
+import StatusBadge from './StatusBadge';
 
 interface User {
     _id: string;
@@ -49,6 +50,7 @@ export default function TicketItem({ ticket, projectMembers }: TicketProps) {
                             {ticket.title}
                         </h3>
                     </Link>
+                    <StatusBadge status={status} />
                     <span className={`px-2 py-0.5 rounded text-xs font-bold border 
             ${ticket.priority === 'High' ? 'bg-red-50 text-red-700 border-red-200' :
                             ticket.priority === 'Medium' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
@@ -78,10 +80,7 @@ export default function TicketItem({ ticket, projectMembers }: TicketProps) {
 
                 {/* Status Dropdown */}
                 <select
-                    className={`text-sm p-2 border rounded font-medium cursor-pointer focus:ring-2 outline-none
-            ${status === 'Open' ? 'text-green-700 bg-green-50 border-green-200 focus:ring-green-100' :
-                            status === 'In-Progress' ? 'text-blue-700 bg-blue-50 border-blue-200 focus:ring-blue-100' :
-                                'text-gray-600 bg-gray-100 border-gray-300 focus:ring-gray-200'}`}
+                    className="text-sm p-2 border rounded font-medium cursor-pointer focus:ring-2 focus:ring-blue-100 outline-none bg-white"
                     value={status}
                     onChange={(e) => handleStatusChange(e.target.value)}
                 >
