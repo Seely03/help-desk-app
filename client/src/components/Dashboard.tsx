@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
-import { logoutUser } from '../services/authService';
 import Layout from './Layout';
+import SkeletonLoader from './SkeletonLoader';
+import StatusBadge from './StatusBadge';
 
 interface Project {
   _id: string;
@@ -25,11 +26,6 @@ export default function Dashboard() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // New State for "Create Project"
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [newProjectName, setNewProjectName] = useState('');
-  const [newProjectDesc, setNewProjectDesc] = useState('');
-
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     if (!storedUser) {
@@ -41,11 +37,10 @@ export default function Dashboard() {
 
     const fetchData = async () => {
       try {
-        // Fetch Projects
         const projectRes = await api.get('/projects');
         setProjects(projectRes.data);
 
-        // Fetch Tickets
+        // Fetch Tickets assigned to me
         const ticketRes = await api.get(`/tickets?assignedTo=${parsedUser._id}&status=Open`);
         setTickets(ticketRes.data);
       } catch (err) {
@@ -58,155 +53,123 @@ export default function Dashboard() {
     fetchData();
   }, [navigate]);
 
-  const handleLogout = () => {
-    logoutUser();
-    navigate('/login');
-  };
-
-  // New Function: Handle Create Project
-  const handleCreateProject = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const res = await api.post('/projects', {
-        name: newProjectName,
-        description: newProjectDesc
-      });
-
-      // Add the new project to the list immediately (Optimistic UI)
-      setProjects([res.data.project, ...projects]);
-
-      // Reset form
-      setNewProjectName('');
-      setNewProjectDesc('');
-      setShowCreateForm(false);
-    } catch (err) {
-      console.error("Failed to create project", err);
-      alert("Failed to create project");
-    }
-  };
-
-  if (loading) return <div className="p-8">Loading dashboard...</div>;
+  if (loading) {
+    return (
+      <Layout user={user}>
+        <SkeletonLoader />
+      </Layout>
+    );
+  }
 
   return (
     <Layout user={user}>
-    <div className="min-h-screen bg-gray-50 p-8">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
-          
-          {/* Admin Badge/Link */}
-          {user?.isAdmin && (
-            <button 
-              onClick={() => navigate('/admin/users')}
-              className="mt-2 text-xs bg-red-100 text-red-800 px-2 py-1 rounded font-bold hover:bg-red-200 transition"
-            >
-              🔧 Manage Users (Admin)
-            </button>
-          )}
-        </div>
-        
-        <button 
-          onClick={handleLogout} 
-          className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition"
-        >
-          Logout
-        </button>
+      
+      {/* Page Header */}
+      <div className="mb-8">
+        <h2 className="text-3xl font-bold text-gray-800">Dashboard</h2>
+        <p className="text-gray-500 mt-1">Welcome back, {user?.username}. Here is your overview.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-
-        {/* Projects Section */}
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold text-gray-800">Your Projects</h2>
-
-            <button
-              onClick={() => navigate('/create-project')} // <--- Navigate to new page
-              className="text-blue-600 hover:text-blue-800 text-sm font-semibold"
+      <div className="space-y-10">
+        
+        {/* --- PROJECTS SECTION --- */}
+        <section>
+          <div className="flex justify-between items-end mb-4 border-b pb-2">
+            <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+              📂 Your Projects
+              <span className="bg-gray-200 text-gray-700 text-xs px-2 py-1 rounded-full">{projects.length}</span>
+            </h3>
+            <button 
+              onClick={() => navigate('/create-project')}
+              className="text-sm font-semibold text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-3 py-1 rounded transition"
             >
               + New Project
             </button>
           </div>
-
-
-          {/* Create Project Form (Visible only when toggled) */}
-          {showCreateForm && (
-            <form onSubmit={handleCreateProject} className="mb-6 p-4 bg-blue-50 rounded border border-blue-100">
-              <div className="mb-2">
-                <input
-                  type="text"
-                  placeholder="Project Name"
-                  value={newProjectName}
-                  onChange={(e) => setNewProjectName(e.target.value)}
-                  className="w-full p-2 border rounded text-sm"
-                  required
-                />
-              </div>
-              <div className="mb-2">
-                <input
-                  type="text"
-                  placeholder="Description (Optional)"
-                  value={newProjectDesc}
-                  onChange={(e) => setNewProjectDesc(e.target.value)}
-                  className="w-full p-2 border rounded text-sm"
-                />
-              </div>
-              <button type="submit" className="bg-blue-600 text-white text-sm px-3 py-1 rounded hover:bg-blue-700">
-                Create
-              </button>
-            </form>
-          )}
-
-          {/* Project List */}
+          
           {projects.length === 0 ? (
-            <p className="text-gray-500 italic">You haven't joined any projects yet.</p>
+            <div className="text-center py-10 bg-white rounded-lg border border-dashed border-gray-300">
+              <p className="text-gray-500 mb-2">You aren't part of any projects yet.</p>
+              <button onClick={() => navigate('/create-project')} className="text-blue-600 font-bold hover:underline">Create one now</button>
+            </div>
           ) : (
-            <ul className="space-y-3">
+            // GRID LAYOUT FOR PROJECTS
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {projects.map((proj) => (
-                <li
-                  key={proj._id}
-                  className="border-b pb-2 last:border-0 cursor-pointer hover:bg-gray-50 p-2 transition"
-                  onClick={() => navigate(`/projects/${proj._id}`)} // <--- Add navigation
+                <div 
+                  key={proj._id} 
+                  onClick={() => navigate(`/projects/${proj._id}`)}
+                  className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-md hover:border-blue-300 cursor-pointer transition-all group"
                 >
-                  <h3 className="font-semibold text-blue-600">{proj.name}</h3>
-                  <p className="text-sm text-gray-600 truncate">{proj.description}</p>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-
-        {/* Tickets Section */}
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-bold text-gray-800 mb-4">Assigned Tickets (Open)</h2>
-
-          {tickets.length === 0 ? (
-            <p className="text-gray-500 italic">No open tickets assigned to you.</p>
-          ) : (
-            <ul className="space-y-3">
-              {tickets.map((ticket) => (
-                <li key={ticket._id} className="flex justify-between items-center border-b pb-2 last:border-0">
-                  <div>
-                    <h3 className="font-medium">{ticket.title}</h3>
-                    <span className="text-xs bg-gray-200 px-2 py-1 rounded text-gray-700 ml-2">
-                      {ticket.project?.name || 'Unknown Project'}
-                    </span>
+                  <div className="flex justify-between items-start mb-2">
+                    <h4 className="font-bold text-lg text-gray-800 group-hover:text-blue-600 transition-colors truncate pr-2">
+                      {proj.name}
+                    </h4>
+                    {/* Optional Icon/Badge */}
+                    <span className="text-gray-300 group-hover:text-blue-400">↗</span>
                   </div>
-                  <span className={`text-xs px-2 py-1 rounded font-bold 
-                    ${ticket.priority === 'High' ? 'bg-red-100 text-red-700' :
-                      ticket.priority === 'Medium' ? 'bg-yellow-100 text-yellow-700' :
-                        'bg-green-100 text-green-700'}`}>
-                    {ticket.priority}
-                  </span>
-                </li>
+                  <p className="text-sm text-gray-500 line-clamp-2 h-10">
+                    {proj.description || 'No description provided.'}
+                  </p>
+                </div>
               ))}
-            </ul>
+            </div>
           )}
-        </div>
+        </section>
+
+        {/* --- TICKETS SECTION --- */}
+        <section>
+          <div className="flex justify-between items-end mb-4 border-b pb-2">
+            <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+              🎫 Assigned Tickets
+              <span className="bg-red-100 text-red-700 text-xs px-2 py-1 rounded-full">{tickets.length}</span>
+            </h3>
+          </div>
+          
+          {tickets.length === 0 ? (
+            <div className="text-center py-10 bg-white rounded-lg border border-dashed border-gray-300">
+              <p className="text-gray-500">Good news! You have no open tickets.</p>
+            </div>
+          ) : (
+            // GRID LAYOUT FOR TICKETS
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {tickets.map((ticket) => (
+                <div 
+                  key={ticket._id}
+                  onClick={() => navigate(`/tickets/${ticket._id}`)}
+                  className="bg-white p-5 rounded-xl shadow-sm border border-gray-200 hover:shadow-md hover:border-blue-300 cursor-pointer transition-all flex flex-col justify-between h-40"
+                >
+                  <div>
+                    <div className="flex justify-between items-start mb-2">
+                      <span className="text-xs font-bold text-gray-400 uppercase tracking-wide">
+                        {ticket.project?.name || 'Unknown Project'}
+                      </span>
+                      {/* Use your Badge component if you have it, otherwise fallback to styled span */}
+                      {StatusBadge ? (
+                        <StatusBadge status={ticket.priority} type="priority" />
+                      ) : (
+                         <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded border ${
+                            ticket.priority === 'High' ? 'bg-red-50 text-red-700 border-red-200' : 'bg-green-50 text-green-700 border-green-200'
+                         }`}>{ticket.priority}</span>
+                      )}
+                    </div>
+                    
+                    <h4 className="font-bold text-gray-800 leading-tight mb-2 line-clamp-2">
+                      {ticket.title}
+                    </h4>
+                  </div>
+
+                  <div className="flex justify-between items-center text-xs text-gray-500 pt-3 border-t mt-2">
+                    <span>Status: <span className="font-semibold text-gray-700">{ticket.status}</span></span>
+                    <span className="text-blue-600 font-semibold group-hover:underline">View Details &rarr;</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
 
       </div>
-    </div >
     </Layout>
   );
 }

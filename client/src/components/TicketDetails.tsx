@@ -225,7 +225,11 @@ export default function TicketDetails() {
                                         ? ticket.assignedTo._id
                                         : ticket.assignedTo || ''
                                 }
-                                onChange={(e) => handleUpdateTicket({ assignedTo: e.target.value })}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+                                    // Send null if "Unassigned" is selected, otherwise send the ID
+                                    handleUpdateTicket({ assignedTo: value === "" ? null : value });
+                                  }}
                             >
                                 <option value="">Unassigned</option>
 
