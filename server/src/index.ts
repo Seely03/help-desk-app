@@ -7,6 +7,11 @@ import ticketRoutes from './routes/ticketRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import { projectRouter } from './routes/projectRoutes.js';
 import path from 'path';
+import { fileURLToPath } from 'url'; // <--- Add this import
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 // Connect to Database
 connectDB();
 
@@ -25,6 +30,17 @@ app.use('/api/tickets', ticketRoutes);   // Handles Ticket operations
 app.get('/api/health', (req, res) => {
     res.status(200).send('OK');
 });
+
+if (process.env.NODE_ENV === 'production') {
+    console.log("Running in production mode"); // Optional: verify logs
+    
+    // Point to the 'public' folder relative to this file
+    app.use(express.static(path.join(__dirname, '../public')));
+  
+    app.get('*', (req, res) => {
+      res.sendFile(path.resolve(__dirname, '../public', 'index.html'));
+    });
+  }
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
