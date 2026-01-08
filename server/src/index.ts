@@ -34,13 +34,17 @@ app.get('/api/health', (req, res) => {
 if (process.env.NODE_ENV === 'production') {
     console.log("Running in production mode"); // Optional: verify logs
 
+
     // Point to the 'public' folder relative to this file
     app.use(express.static(path.join(__dirname, '../public')));
 
+
     app.get('*', (req, res) => {
+        res.sendFile(path.resolve(__dirname, '../public', 'index.html'));
         res.sendFile(path.resolve(__dirname, '../public', 'index.html'));
     });
 }
+
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
@@ -51,7 +55,7 @@ if (process.env.NODE_ENV === 'production') {
     app.use(express.static(path.join(__dirname, '../public')));
 
     // Any route not caught by /api goes to index.html (React Router)
-    app.get(/(.*)/, (req, res) => {
+    app.get('*', (req, res) => {
         res.sendFile(path.resolve(__dirname, '../public', 'index.html'));
     });
 }
