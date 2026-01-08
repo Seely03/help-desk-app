@@ -126,12 +126,20 @@ export const updateTicket = async (req: Request, res: Response) => {
     const oldTicket = await Ticket.findById(id);
     if (!oldTicket) return res.status(404).json({ message: 'Ticket not found' });
 
+    if (updates.assignedTo === "") {
+      updates.assignedTo = null;
+    }
+
     // 2. Perform the Update
     const updatedTicket = await Ticket.findByIdAndUpdate(id, updates, { new: true })
       .populate('assignedTo', 'username')
       .populate('project', 'name members');
 
+      if (!updatedTicket) {
+        return res.status(404).json({ message: 'Ticket not found' });
+      }
     // 3. DETECT CHANGES & CREATE AUDIT LOGS
+    
     
     // Check Status Change
     if (updates.status && updates.status !== oldTicket.status) {
@@ -155,12 +163,22 @@ export const updateTicket = async (req: Request, res: Response) => {
 
     // Check Assignment Change
     // Note: We compare strings because ObjectIds are objects
-    if (updates.assignedTo && updates.assignedTo.toString() !== oldTicket.assignedTo?.toString()) {
-      // If we assigned it to someone, we might want to look up their name for the log
-      // But for simplicity, we'll just log that it was reassigned. 
-      // A more advanced version would look up the new assignee's name.
+    const oldAssigneeId = oldTicket.assignedTo ? oldTicket.assignedTo.toString() : null;
+    const newAssigneeId = updates.assignedTo ? updates.assignedTo.toString() : null;
+
+    // Only log if the field was actually sent in the request AND the value changed
+    if (updates.assignedTo !== undefined && oldAssigneeId !== newAssigneeId) {
+      let logContent = '';
+      
+      if (updatedTicket.assignedTo) {
+        const newAssigneeName = (updatedTicket.assignedTo as any).username;
+        logContent = `assigned to "${newAssigneeName}"`;
+      } else {
+        logContent = `unassigned the ticket`;
+      }
+
       await Comment.create({
-        content: `updated the assignee`,
+        content: logContent,
         ticket: id,
         author: userId,
         isSystem: true

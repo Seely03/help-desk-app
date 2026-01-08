@@ -6,7 +6,7 @@ import connectDB from './db.js';
 import ticketRoutes from './routes/ticketRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import { projectRouter } from './routes/projectRoutes.js';
-
+import path from 'path';
 // Connect to Database
 connectDB();
 
@@ -29,3 +29,13 @@ app.get('/api/health', (req, res) => {
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
+
+if (process.env.NODE_ENV === 'production') {
+    // Set static folder
+    app.use(express.static(path.join(__dirname, '../public')));
+  
+    // Any route not caught by /api goes to index.html (React Router)
+    app.get('*', (req, res) => {
+      res.sendFile(path.resolve(__dirname, '../public', 'index.html'));
+    });
+  }

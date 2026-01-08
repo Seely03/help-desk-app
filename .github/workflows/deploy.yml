@@ -1,0 +1,100 @@
+name: Deploy to AWS Lightsail
+
+on:
+  push:
+    branches:
+      - main  # Deploys to Dev
+      - beta  # Deploys to Beta
+  release:
+    types: [published] # Deploys to Prod on release tag
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  ECR_REPOSITORY: helpdesk-app
+
+jobs:
+  deploy:
+    name: Build and Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # 1. Determine Environment
+      - name: Set Environment Variables
+        id: env-setter
+        run: |
+          if [[ "${{ github.event_name }}" == "release" ]]; then
+            echo "SERVICE_NAME=helpdesk" >> $GITHUB_ENV
+            echo "ENV_TAG=prod" >> $GITHUB_ENV
+          elif [[ "${{ github.ref }}" == "refs/heads/beta" ]]; then
+            echo "SERVICE_NAME=helpdesk-beta" >> $GITHUB_ENV
+            echo "ENV_TAG=beta" >> $GITHUB_ENV
+          else
+            echo "SERVICE_NAME=helpdesk-dev" >> $GITHUB_ENV
+            echo "ENV_TAG=dev" >> $GITHUB_ENV
+          fi
+
+      # 2. Configure AWS Credentials
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # 3. Install Lightsail Control (Required to push containers)
+      - name: Install LightsailCTL Plugin
+        run: |
+          curl "https://s3.us-west-2.amazonaws.com/lightsailctl/latest/linux-amd64/lightsailctl" -o "lightsailctl"
+          sudo mv "lightsailctl" /usr/local/bin/lightsailctl
+          sudo chmod +x /usr/local/bin/lightsailctl
+
+      # 4. Build Docker Image
+      - name: Build Docker Image
+        run: |
+          docker build -t $SERVICE_NAME .
+
+      # 5. Push to Lightsail
+      - name: Push Image to Lightsail
+        id: push-image
+        run: |
+          # Pushes image and captures the image name assigned by AWS
+          # The output looks like: "Refer to this image as: :service-name.helpdesk-app.1"
+          aws lightsail push-container-image \
+            --region $AWS_REGION \
+            --service-name $SERVICE_NAME \
+            --label helpdesk-$ENV_TAG \
+            --image $SERVICE_NAME
+
+      # 6. Deploy the Image
+      # We parse the previous step to find the uploaded image tag
+      - name: Create Deployment
+        run: |
+          # Get the image tag we just pushed (retrieves the latest image for this service)
+          IMAGE_TAG=$(aws lightsail get-container-images --service-name $SERVICE_NAME | jq -r .containerImages[0].image)
+          
+          echo "Deploying image: $IMAGE_TAG to $SERVICE_NAME"
+
+          aws lightsail create-container-service-deployment \
+            --service-name $SERVICE_NAME \
+            --containers "{
+              \"$SERVICE_NAME\": {
+                \"image\": \"$IMAGE_TAG\",
+                \"ports\": { \"5000\": \"HTTP\" },
+                \"environment\": {
+                  \"NODE_ENV\": \"production\",
+                  \"PORT\": \"5000\",
+                  \"MONGO_URI\": \"${{ secrets.MONGO_URI }}\",
+                  \"JWT_SECRET\": \"${{ secrets.JWT_SECRET }}\"
+                }
+              }
+            }" \
+            --public-endpoint "{
+              \"containerName\": \"$SERVICE_NAME\",
+              \"containerPort\": 5000,
+              \"healthCheck\": {
+                \"path\": \"/api/health\",
+                \"intervalSeconds\": 10
+              }
+            }"
