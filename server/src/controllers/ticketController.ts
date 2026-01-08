@@ -8,7 +8,7 @@ import {
   TicketPriority,
   TicketStatus,
   CONSTANTS
-} from '../constants/primitives.js';
+} from '../constants/Primitives.js';
 import Comment from '../models/comment.js';
 
 // 1. Zod Schema for Creating a Ticket

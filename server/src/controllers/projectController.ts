@@ -2,10 +2,10 @@ import { Request, Response } from 'express';
 import { z } from 'zod';
 import Project from '../models/project.js';
 import User from '../models/user.js';
-import { ProjectTitle, ProjectDescription } from '../constants/primitives.js';
+import { ProjectTitle, ProjectDescription } from '../constants/Primitives.js';
 
 // 1. Define the Zod Schema for this specific request
-// We compose this using the primitives we already built
+// We compose this using the Primitives we already built
 const CreateProjectSchema = z.object({
   name: ProjectTitle,
   description: ProjectDescription.optional(), // Description is optional

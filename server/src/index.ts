@@ -23,7 +23,7 @@ app.use('/api/tickets', ticketRoutes);   // Handles Ticket operations
 
 // Health Check
 app.get('/api/health', (req, res) => {
-    res.json({ status: 'OK', message: 'Server is running' });
+    res.status(200).send('OK');
 });
 
 app.listen(PORT, () => {
@@ -33,9 +33,9 @@ app.listen(PORT, () => {
 if (process.env.NODE_ENV === 'production') {
     // Set static folder
     app.use(express.static(path.join(__dirname, '../public')));
-  
+
     // Any route not caught by /api goes to index.html (React Router)
     app.get('*', (req, res) => {
-      res.sendFile(path.resolve(__dirname, '../public', 'index.html'));
+        res.sendFile(path.resolve(__dirname, '../public', 'index.html'));
     });
-  }
+}

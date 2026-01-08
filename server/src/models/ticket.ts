@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import { CONSTANTS } from '../constants/primitives.js';
+import { CONSTANTS } from '../constants/Primitives.js';
 
 export interface ITicket extends Document {
   title: string;
