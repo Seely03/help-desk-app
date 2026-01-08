@@ -1,5 +1,5 @@
 # --- Stage 1: Build the React Frontend ---
-    FROM node:18-alpine as client-build
+    FROM node:20-alpine as client-build
     WORKDIR /app/client
     COPY client/package*.json ./
     RUN npm install
@@ -8,7 +8,7 @@
     RUN npm run build
     
     # --- Stage 2: Build the Express Backend ---
-    FROM node:18-alpine
+    FROM node:20-alpine
     WORKDIR /app
     
     # Copy Server Dependencies
