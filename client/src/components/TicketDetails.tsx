@@ -18,8 +18,8 @@ export default function TicketDetails() {
     const refreshComments = async () => {
         const res = await api.get(`/tickets/${id}/comments`);
         setComments(res.data);
-      };
-      
+    };
+
     // Load User and Data
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
@@ -94,158 +94,175 @@ export default function TicketDetails() {
 
     return (
         <Layout user={user}>
-        <div className="min-h-screen bg-gray-50 p-8">
-            {/* Back Link */}
-            <button
-                onClick={() => navigate(`/projects/${ticket.project._id}`)} // Go back to Project
-                className="text-blue-600 mb-4 hover:underline flex items-center gap-1"
-            >
-                &larr; Back to Project
-            </button>
+            <div className="min-h-screen bg-gray-50 p-8">
+                {/* Back Link */}
+                <button
+                    onClick={() => navigate(`/projects/${ticket.project._id}`)} // Go back to Project
+                    className="text-blue-600 mb-4 hover:underline flex items-center gap-1"
+                >
+                    &larr; Back to Project
+                </button>
 
-            <div className="flex flex-col md:flex-row gap-6 max-w-6xl mx-auto">
+                <div className="flex flex-col md:flex-row gap-6 max-w-6xl mx-auto">
 
-                {/* LEFT COLUMN: Content & Discussion */}
-                <div className="flex-1">
-                    <div className="bg-white p-6 rounded shadow mb-6">
-                        <div className="flex items-center gap-3 mb-2">
-                            <h1 className="text-3xl font-bold text-gray-900">{ticket.title}</h1>
-                            <StatusBadge status={ticket.status} />
-                        </div>
-                        <p className="text-gray-500 mb-4">
-                            Created on {new Date(ticket.createdAt).toLocaleDateString()}
-                        </p>
-                        <div className="bg-gray-50 p-4 rounded text-gray-700 whitespace-pre-wrap">
-                            {ticket.description || 'No description provided.'}
-                        </div>
-                    </div>
-
-                    {/* Comments Section */}
-                    <div className="bg-white p-6 rounded shadow">
-                        <h3 className="text-xl font-bold mb-6">Discussion</h3>
-
-                        <div className="space-y-6 mb-8">
-                            {comments.length === 0 && <p className="text-gray-400 italic">No comments yet.</p>}
-
-                            {comments.map((comment) => (
-                                <div key={comment._id} className="mb-4">
-
-                                    {/* RENDER SYSTEM LOG (Centered, Gray) */}
-                                    {comment.isSystem ? (
-                                        <div className="flex items-center justify-center my-4">
-                                            <div className="bg-gray-100 px-3 py-1 rounded-full text-xs text-gray-500 flex items-center gap-2 border">
-                                                <span className="font-bold">{comment.author?.username}</span>
-                                                <span>{comment.content}</span>
-                                                <span className="text-gray-400">• {new Date(comment.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                                            </div>
-                                        </div>
-                                    ) : (
-
-                                        /* RENDER USER MESSAGE (Normal Bubble) */
-                                        <div className="flex gap-4">
-                                            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold shrink-0">
-                                                {comment.author?.username?.[0]?.toUpperCase()}
-                                            </div>
-                                            <div className="flex-1">
-                                                <div className="flex items-baseline gap-2 mb-1">
-                                                    <span className="font-bold text-gray-900">{comment.author?.username}</span>
-                                                    <span className="text-xs text-gray-500">{new Date(comment.createdAt).toLocaleString()}</span>
-                                                </div>
-                                                <div className="bg-white p-3 border rounded-lg shadow-sm text-gray-800">
-                                                    {comment.content}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-
-                        <form onSubmit={handlePostComment}>
-                            <textarea
-                                className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none h-24 resize-none"
-                                placeholder="Add a comment..."
-                                value={newComment}
-                                onChange={(e) => setNewComment(e.target.value)}
-                            />
-                            <div className="flex justify-end mt-2">
-                                <button
-                                    type="submit"
-                                    className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 font-semibold disabled:opacity-50"
-                                    disabled={!newComment.trim()}
-                                >
-                                    Post Comment
-                                </button>
+                    {/* LEFT COLUMN: Content & Discussion */}
+                    <div className="flex-1">
+                        <div className="bg-white p-6 rounded shadow mb-6">
+                            <div className="flex items-center gap-3 mb-2">
+                                <h1 className="text-3xl font-bold text-gray-900">{ticket.title}</h1>
+                                <StatusBadge status={ticket.status} />
                             </div>
-                        </form>
-                    </div>
-                </div>
-
-                {/* RIGHT COLUMN: Sidebar Metadata */}
-                <div className="w-full md:w-80 space-y-6">
-                    <div className="bg-white p-6 rounded shadow">
-                        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Details</h3>
-
-                        {/* Status */}
-                        <div className="mb-4">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                            <select
-                                className="w-full p-2 border rounded bg-gray-50"
-                                value={ticket.status}
-                                onChange={(e) => handleUpdateTicket({ status: e.target.value })}
-                            >
-                                <option value="Open">Open</option>
-                                <option value="In-Progress">In Progress</option>
-                                <option value="Closed">Closed</option>
-                            </select>
+                            <p className="text-gray-500 mb-4">
+                                Created on {new Date(ticket.createdAt).toLocaleDateString()}
+                            </p>
+                            <div className="bg-gray-50 p-4 rounded text-gray-700 whitespace-pre-wrap">
+                                {ticket.description || 'No description provided.'}
+                            </div>
                         </div>
 
-                        {/* Priority */}
-                        <div className="mb-4">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
-                            <select
-                                className="w-full p-2 border rounded bg-gray-50"
-                                value={ticket.priority}
-                                onChange={(e) => handleUpdateTicket({ priority: e.target.value })}
-                            >
-                                <option value="Low">Low</option>
-                                <option value="Medium">Medium</option>
-                                <option value="High">High</option>
-                            </select>
-                        </div>
+                        {/* Comments Section */}
+                        <div className="bg-white p-6 rounded shadow">
+                            <h3 className="text-xl font-bold mb-6">Discussion</h3>
 
-                        {/* Assignee */}
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Assignee</label>
-                            <select
-                                className="w-full p-2 border rounded bg-gray-50"
-                                // FIX: Handle both Object (from DB) and String (from local update)
-                                value={
-                                    ticket.assignedTo && typeof ticket.assignedTo === 'object'
-                                        ? ticket.assignedTo._id
-                                        : ticket.assignedTo || ''
-                                }
-                                onChange={(e) => {
-                                    const value = e.target.value;
-                                    // Send null if "Unassigned" is selected, otherwise send the ID
-                                    handleUpdateTicket({ assignedTo: value === "" ? null : value });
-                                  }}
-                            >
-                                <option value="">Unassigned</option>
+                            <div className="space-y-6 mb-8">
+                                {comments.length === 0 && <p className="text-gray-400 italic">No comments yet.</p>}
 
-                                {/* FIX: Ensure members exist before mapping */}
-                                {ticket.project?.members?.map((m: any) => (
-                                    <option key={m._id} value={m._id}>
-                                        {m.username}
-                                    </option>
+                                {comments.map((comment) => (
+                                    <div key={comment._id} className="mb-4">
+
+                                        {/* RENDER SYSTEM LOG (Centered, Gray) */}
+                                        {comment.isSystem ? (
+                                            <div className="flex items-center justify-center my-4">
+                                                <div className="bg-gray-100 px-3 py-1 rounded-full text-xs text-gray-500 flex items-center gap-2 border">
+                                                    <span className="font-bold">{comment.author?.username}</span>
+                                                    <span>{comment.content}</span>
+                                                    <span className="text-gray-400">• {new Date(comment.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                                </div>
+                                            </div>
+                                        ) : (
+
+                                            /* RENDER USER MESSAGE (Normal Bubble) */
+                                            <div className="flex gap-4">
+                                                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold shrink-0">
+                                                    {comment.author?.username?.[0]?.toUpperCase()}
+                                                </div>
+                                                <div className="flex-1">
+                                                    <div className="flex items-baseline gap-2 mb-1">
+                                                        <span className="font-bold text-gray-900">{comment.author?.username}</span>
+                                                        <span className="text-xs text-gray-500">{new Date(comment.createdAt).toLocaleString()}</span>
+                                                    </div>
+                                                    <div className="bg-white p-3 border rounded-lg shadow-sm text-gray-800">
+                                                        {comment.content}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
                                 ))}
-                            </select>
+                            </div>
+
+                            <form onSubmit={handlePostComment}>
+                                <textarea
+                                    className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none h-24 resize-none"
+                                    placeholder="Add a comment..."
+                                    value={newComment}
+                                    onChange={(e) => setNewComment(e.target.value)}
+                                />
+                                <div className="flex justify-end mt-2">
+                                    <button
+                                        type="submit"
+                                        className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 font-semibold disabled:opacity-50"
+                                        disabled={!newComment.trim()}
+                                    >
+                                        Post Comment
+                                    </button>
+                                </div>
+                            </form>
                         </div>
                     </div>
-                </div>
 
+                    {/* RIGHT COLUMN: Sidebar Metadata */}
+                    <div className="w-full md:w-80 space-y-6">
+                        <div className="bg-white p-6 rounded shadow">
+                            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Details</h3>
+
+                            {/* Status */}
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                                <select
+                                    className="w-full p-2 border rounded bg-gray-50"
+                                    value={ticket.status}
+                                    onChange={(e) => handleUpdateTicket({ status: e.target.value })}
+                                >
+                                    <option value="Open">Open</option>
+                                    <option value="In-Progress">In Progress</option>
+                                    <option value="Closed">Closed</option>
+                                </select>
+                            </div>
+
+                            {/* Priority */}
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
+                                <select
+                                    className="w-full p-2 border rounded bg-gray-50"
+                                    value={ticket.priority}
+                                    onChange={(e) => handleUpdateTicket({ priority: e.target.value })}
+                                >
+                                    <option value="Low">Low</option>
+                                    <option value="Medium">Medium</option>
+                                    <option value="High">High</option>
+                                </select>
+                            </div>
+                            {/* SIZING (STORY POINTS) */}
+                            <div className="mb-6">
+                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">
+                                    Sizing (Points)
+                                </label>
+                                <select
+                                    value={ticket.sizing || 1}
+                                    onChange={(e) => handleUpdateTicket({ sizing: Number(e.target.value) })}
+                                    className="w-full bg-gray-50 border border-gray-200 text-gray-700 py-2 px-3 rounded leading-tight focus:outline-none focus:bg-white focus:border-blue-500 transition"
+                                >
+                                    {[1, 2, 3, 5, 8, 13, 21].map((point) => (
+                                        <option key={point} value={point}>
+                                            {point} {point === 1 ? 'Point' : 'Points'}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Assignee */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Assignee</label>
+                                <select
+                                    className="w-full p-2 border rounded bg-gray-50"
+                                    // FIX: Handle both Object (from DB) and String (from local update)
+                                    value={
+                                        ticket.assignedTo && typeof ticket.assignedTo === 'object'
+                                            ? ticket.assignedTo._id
+                                            : ticket.assignedTo || ''
+                                    }
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        // Send null if "Unassigned" is selected, otherwise send the ID
+                                        handleUpdateTicket({ assignedTo: value === "" ? null : value });
+                                    }}
+                                >
+                                    <option value="">Unassigned</option>
+
+                                    {/* FIX: Ensure members exist before mapping */}
+                                    {ticket.project?.members?.map((m: any) => (
+                                        <option key={m._id} value={m._id}>
+                                            {m.username}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
             </div>
-        </div>
         </Layout>
     );
 }

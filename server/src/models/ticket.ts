@@ -36,6 +36,11 @@ const TicketSchema: Schema = new Schema({
     enum: CONSTANTS.ENUMS.STATUS,
     default: 'Open'
   },
+  sizing: { 
+    type: Number, 
+    default: 1,
+    enum: [1, 2, 3, 5, 8, 13, 21] 
+  },
 
   // Relationships
   assignedTo: { type: Schema.Types.ObjectId, ref: 'User' },

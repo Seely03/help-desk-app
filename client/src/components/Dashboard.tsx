@@ -16,6 +16,7 @@ interface Ticket {
   title: string;
   priority: string;
   status: string;
+  sizing: number;
   project: { name: string };
 }
 
