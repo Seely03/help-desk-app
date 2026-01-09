@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createProject, getProjects, getProjectById, addMember} from '../controllers/projectController.js';
+import { createProject, getProjects, getProjectById, addMember, removeMember} from '../controllers/projectController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
 const router = Router();
@@ -11,5 +11,7 @@ router.get('/', protect, getProjects);
 router.get('/:id', protect, getProjectById);
 
 router.put('/:id/members', protect, addMember);
+
+router.delete('/:projectId/members/:userId', protect, removeMember);
 
 export const projectRouter = router;

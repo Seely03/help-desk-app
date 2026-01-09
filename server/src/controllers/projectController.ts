@@ -123,3 +123,40 @@ export const addMember = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Server Error' });
   }
 };
+
+// @desc    Remove member from project (Admin removes user OR User leaves)
+// @route   DELETE /api/projects/:projectId/members/:userId
+// @access  Private
+export const removeMember = async (req: Request, res: Response) => {
+  try {
+    const { projectId, userId } = req.params;
+
+    // 1. Find the project
+    const project = await Project.findById(projectId);
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+
+    // 2. Check Permissions
+    const requestingUser = (req as any).user;
+    const isSelf = requestingUser._id.toString() === userId;
+    const isAdmin = requestingUser.isAdmin;
+
+    // Reject if you aren't an Admin AND you aren't removing yourself
+    if (!isAdmin && !isSelf) {
+      return res.status(403).json({ message: 'Not authorized to remove this member' });
+    }
+
+    // 3. Remove the user from the members array
+    // We filter the array to keep everyone EXCEPT the userId we want to remove
+    project.members = project.members.filter(
+      (memberId) => memberId.toString() !== userId
+    );
+
+    await project.save();
+
+    res.json({ message: 'Member removed', projectId: project._id, members: project.members });
+  } catch (error: any) {
+    res.status(500).json({ message: 'Server Error', error: error.message });
+  }
+};
