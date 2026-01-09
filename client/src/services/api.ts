@@ -2,7 +2,9 @@ import axios from 'axios';
 
 // 1. Create the Axios Instance
 const api = axios.create({
-  baseURL: 'http://localhost:5000/api', // Match your backend URL
+  baseURL: import.meta.env.PROD 
+    ? '/api'                   // Production: Use relative path (same domain)
+    : 'http://localhost:5000/api', // Development: Point to local backend
   headers: {
     'Content-Type': 'application/json',
   },

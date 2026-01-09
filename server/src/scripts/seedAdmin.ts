@@ -9,7 +9,6 @@ const makeAdmin = async () => {
     await mongoose.connect(process.env.MONGO_URI as string);
     console.log('MongoDB Connected');
 
-    // REPLACE THIS WITH YOUR EMAIL
     const emailToPromote = 'test@amazon.com'; 
 
     const user = await User.findOneAndUpdate(
