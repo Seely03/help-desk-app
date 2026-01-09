@@ -39,7 +39,6 @@ if (process.env.NODE_ENV === 'production') {
     // Point to the 'public' folder relative to this file
     app.use(express.static(path.join(__dirname, '../public')));
 
-    // CORRECT SYNTAX: Use regex (.*) instead of * to prevent crash
     app.get(/(.*)/, (req, res) => {
         res.sendFile(path.resolve(__dirname, '../public', 'index.html'));
     });

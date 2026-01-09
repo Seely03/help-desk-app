@@ -7,7 +7,7 @@ interface Props {
 }
 
 export default function TicketForm({ onTicketCreated }: Props) {
-  const { user } = useAuth(); // <--- Access User
+  const { user } = useAuth();
   // Local state for form fields
   const [formData, setFormData] = useState({
     title: '',

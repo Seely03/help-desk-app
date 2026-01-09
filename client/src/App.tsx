@@ -10,7 +10,6 @@ import AdminUserManagement from './components/AdminUserManagement';
 import TicketDetails from './components/TicketDetails';
 import './index.css';
 
-// DELETE the inline 'function Dashboard() { ... }' completely!
 
 function App() {
   return (

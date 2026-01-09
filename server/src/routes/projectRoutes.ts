@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { createProject, getProjects, getProjectById, addMember} from '../controllers/projectController.js';
-import { protect } from '../middleware/authMiddleware.js'; // Assuming this is your auth middleware
+import { protect } from '../middleware/authMiddleware.js';
 
 const router = Router();
 

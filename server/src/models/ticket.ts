@@ -6,6 +6,7 @@ export interface ITicket extends Document {
   description?: string;
   priority: string;
   status: string;
+  sizing: number;
   assignedTo?: mongoose.Types.ObjectId; // Optional: Ticket might be unassigned
   project: mongoose.Types.ObjectId;     // Required: Must belong to a project
 }

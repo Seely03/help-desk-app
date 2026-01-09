@@ -8,7 +8,7 @@ const router = express.Router();
 // Define the endpoints
 router.route('/')
     .get(protect, getTickets)   // Protected: Only logged-in users can get tickets
-    .post(protect, createTicket);       // Protected: Only logged-in users can create
+    .post(protect, createTicket);
 
 router.get('/:id', protect, getTicketById);    
 router.put('/:id', protect, updateTicket)

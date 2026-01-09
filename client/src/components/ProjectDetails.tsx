@@ -148,7 +148,6 @@ export default function ProjectDetails() {
                 )}
 
                 {/* Ticket List */}
-                {/* Ticket List */}
                 <div className="mt-6">
                     {tickets.length === 0 ? (
                         <div className="text-center py-10 bg-gray-50 rounded border border-dashed">

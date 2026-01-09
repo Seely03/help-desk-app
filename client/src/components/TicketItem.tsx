@@ -10,7 +10,7 @@ interface User {
 
 interface TicketProps {
     ticket: any;
-    projectMembers: User[]; // We need the list of members to populate the "Assign" dropdown
+    projectMembers: User[];
 }
 
 export default function TicketItem({ ticket, projectMembers }: TicketProps) {

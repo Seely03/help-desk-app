@@ -52,7 +52,6 @@ export default function AdminUserManagement() {
   const openEditModal = (user: any) => {
     setEditingUser(user);
     setFormData({ 
-      // FIX: Use || '' to ensure these never become 'undefined'
       username: user.username || '', 
       email: user.email || '', 
       jobTitle: user.jobTitle || '', 

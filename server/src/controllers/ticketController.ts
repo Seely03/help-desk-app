@@ -21,7 +21,7 @@ const CreateTicketSchema = z.object({
   priority: TicketPriority.optional(),
   status: TicketStatus.optional(),
   projectId: z.string().min(1, "Project ID is required"), // We need to know where this ticket lives
-  assignedTo: z.string().optional(), // Optional: Assign to a user ID immediately
+  assignedTo: z.string().optional(),
 });
 
 export const createTicket = async (req: Request, res: Response) => {
@@ -37,9 +37,6 @@ export const createTicket = async (req: Request, res: Response) => {
     if (!project) {
       return res.status(404).json({ message: 'Project not found' });
     }
-
-    // (Optional Enhancement: Check if the user is a member of the project?)
-    // if (!project.members.includes(userId)) { ... }
 
     // --- C. DATABASE ACTION ---
 
@@ -115,7 +112,6 @@ export const getTickets = async (req: Request, res: Response) => {
 };
 
 // PUT /api/tickets/:id
-// PUT /api/tickets/:id
 export const updateTicket = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
@@ -135,12 +131,12 @@ export const updateTicket = async (req: Request, res: Response) => {
       .populate('assignedTo', 'username')
       .populate('project', 'name members');
 
-      if (!updatedTicket) {
-        return res.status(404).json({ message: 'Ticket not found' });
-      }
+    if (!updatedTicket) {
+      return res.status(404).json({ message: 'Ticket not found' });
+    }
     // 3. DETECT CHANGES & CREATE AUDIT LOGS
-    
-    
+
+
     // Check Status Change
     if (updates.status && updates.status !== oldTicket.status) {
       await Comment.create({
@@ -169,7 +165,7 @@ export const updateTicket = async (req: Request, res: Response) => {
     // Only log if the field was actually sent in the request AND the value changed
     if (updates.assignedTo !== undefined && oldAssigneeId !== newAssigneeId) {
       let logContent = '';
-      
+
       if (updatedTicket.assignedTo) {
         const newAssigneeName = (updatedTicket.assignedTo as any).username;
         logContent = `assigned to "${newAssigneeName}"`;
@@ -193,7 +189,6 @@ export const updateTicket = async (req: Request, res: Response) => {
 };
 
 // GET /api/tickets/:id
-// GET /api/tickets/:id
 export const getTicketById = async (req: Request, res: Response) => {
   try {
     const ticket = await Ticket.findById(req.params.id)
@@ -210,7 +205,6 @@ export const getTicketById = async (req: Request, res: Response) => {
     if (!ticket) {
       return res.status(404).json({ message: 'Ticket not found' });
     }
-
     res.json(ticket);
   } catch (error) {
     console.error(error);

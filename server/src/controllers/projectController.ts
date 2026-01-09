@@ -17,9 +17,6 @@ export const createProject = async (req: Request, res: Response) => {
     // If this fails, Zod throws an error immediately
     const validatedData = CreateProjectSchema.parse(req.body);
     
-    // We assume your Auth Middleware has attached the user to the request
-    // e.g., req.user.id
-    // If you haven't set up the interface for req.user yet, we'll cast it for now
     const userId = (req as any).user?.id; 
 
     if (!userId) {

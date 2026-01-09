@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom'; // <--- Import useNavigate
+import { useNavigate, Link } from 'react-router-dom';
 import { loginUser } from '../services/authService';
 
 export default function LoginForm() {
@@ -7,8 +7,7 @@ export default function LoginForm() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   
-  const navigate = useNavigate(); // <--- Initialize the hook
-
+  const navigate = useNavigate();
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -16,7 +15,7 @@ export default function LoginForm() {
       console.log('Login Successful:', data);
       
       // Force a redirect to the dashboard
-      navigate('/dashboard'); // <--- This line changes the page
+      navigate('/dashboard');
       
     } catch (err: any) {
       // If login fails, stay here and show error

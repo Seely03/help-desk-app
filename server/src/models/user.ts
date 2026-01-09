@@ -37,7 +37,7 @@ const UserSchema: Schema = new Schema({
   jobTitle: { 
     type: String, 
     enum: CONSTANTS.ENUMS.JOB_TITLES, 
-    default: 'Software Engineer' // Useful default, or remove to make it optional
+    default: 'Software Engineer'
   },
 
   // Team (Free text)

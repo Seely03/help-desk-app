@@ -54,8 +54,8 @@ export const registerUser = async (req: Request, res: Response): Promise<void> =
     // 2. Send the specific message back to the frontend/Postman
     res.status(500).json({
       message: "Server error during registration",
-      details: error.message,  // <--- The text description of the error
-      error: error             // <--- The full error object
+      details: error.message,
+      error: error 
     });
   }
 };
@@ -108,9 +108,8 @@ export const searchUsers = async (req: Request, res: Response) => {
     // Inside searchUsers function
     const users = await User.find({
       username: { $regex: query, $options: 'i' },
-      isActive: true // <--- Only show active users in search results
+      isActive: true
     })
-      // ...
       .select('_id username email jobTitle')
       .limit(10); // Limit results to avoid massive payloads
 

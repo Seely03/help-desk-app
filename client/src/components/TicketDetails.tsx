@@ -85,7 +85,6 @@ export default function TicketDetails() {
         } catch (err) {
             console.error(err);
             alert('Failed to update ticket');
-            // Optional: Revert state here if you want to be perfect
         }
     };
 

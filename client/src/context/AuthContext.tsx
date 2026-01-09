@@ -12,7 +12,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    // FIX: Safe JSON parsing
     const storedUser = localStorage.getItem('user');
     const token = localStorage.getItem('token');
 
